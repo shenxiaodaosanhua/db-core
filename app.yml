@@ -1,0 +1,14 @@
+dbConfig:
+  dsn: "root:root@tcp(127.0.0.1:3306)/shop?charset=utf8mb4&parseTime=True&loc=Local"
+  maxOpenConn: 20
+  maxLifeTime: 1800
+  maxIdleConn: 5
+
+
+apis:
+  - name: userlist
+    table: users
+    sql: ""
+  - name: deptlist
+    table: depts
+    sql: ""

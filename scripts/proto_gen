@@ -1,0 +1,2 @@
+protoc --proto_path=protos --go_out=./ DBRequest.proto
+protoc --proto_path=protos --go-grpc_out=./ DBService.proto
