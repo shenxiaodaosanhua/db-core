@@ -14,12 +14,12 @@ func MapListToInterfaceList(m []map[string]interface{}) []interface{} {
 func MapListToStructList(m []map[string]interface{}) ([]*structpb.Struct, error) {
 	ret := make([]*structpb.Struct, len(m))
 	iList := MapListToInterfaceList(m)
-	vList, err := structpb.NewList(iList) // 自带 一个 把map list 转为 ListValue
+	vList, err := structpb.NewList(iList)
 	if err != nil {
 		return nil, err
 	}
 	for i, item := range vList.GetValues() {
-		ret[i] = item.GetStructValue() //把 value 转为 pb struct
+		ret[i] = item.GetStructValue()
 	}
 	return ret, nil
 }

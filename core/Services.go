@@ -17,7 +17,7 @@ func (s *DbService) Query(ctx context.Context, request *pbfiles.QueryRequest) (r
 	if api == nil {
 		return nil, status.Error(codes.Unavailable, "error api name")
 	}
-	ret, err := api.QueryByTableName() // 返回值是一个map[string]interface{}
+	ret, err := api.QueryByTableName(request.Params) // 返回值是一个map[string]interface{}
 	if err != nil {
 		return nil, status.Error(codes.Unavailable, err.Error())
 	}
