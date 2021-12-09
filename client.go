@@ -20,7 +20,7 @@ func main() {
 	}
 
 	paramStruct, err := structpb.NewStruct(map[string]interface{}{
-		"mobile": "18011801980",
+		"id": 1,
 	})
 	params := &pbfiles.SimpleParams{
 		Params: paramStruct,

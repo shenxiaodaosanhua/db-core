@@ -8,7 +8,7 @@ dbConfig:
 apis:
   - name: userlist
     table: users
-    sql: ""
+    sql: "select * from users where id > @id"
   - name: deptlist
     table: depts
     sql: ""
