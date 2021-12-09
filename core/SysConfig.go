@@ -15,9 +15,15 @@ type DBConfig struct {
 	MaxLifeTime int    `yaml:"maxLifeTime"`
 }
 
+type ServerConfig struct {
+	RpcPort  int `yaml:"rpc_port"`
+	HttpPort int `yaml:"http_port"`
+}
+
 type SysConfigStruct struct {
-	DBConfig *DBConfig `yaml:"dbConfig"`
-	ApiList  []*API    `yaml:"apis"`
+	DBConfig     *DBConfig     `yaml:"dbConfig"`
+	ServerConfig *ServerConfig `yaml:"server"`
+	ApiList      []*API        `yaml:"apis"`
 }
 
 func (c *SysConfigStruct) FindAPI(name string) *API {

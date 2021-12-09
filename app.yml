@@ -4,6 +4,9 @@ dbConfig:
   maxLifeTime: 1800
   maxIdleConn: 5
 
+server:
+  rpc_port: 8080
+  http_port: 8090
 
 apis:
   - name: userlist
