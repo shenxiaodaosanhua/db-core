@@ -16,4 +16,4 @@ apis:
     table: users
     sql: "insert into users(username,password,mobile) values (@username, @password, @mobile)"
     select:
-      sql: "SELECT LAST_INSERT_ID()"
+      sql: "SELECT LAST_INSERT_ID() as user_id"

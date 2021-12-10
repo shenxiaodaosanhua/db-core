@@ -38,5 +38,5 @@ func main() {
 	//for _, item := range rsp.Result {
 	//	fmt.Println(item.AsMap())
 	//}
-	fmt.Println(rsp)
+	fmt.Println(rsp.Select.AsMap())
 }
