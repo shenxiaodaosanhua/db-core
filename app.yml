@@ -12,6 +12,8 @@ apis:
   - name: userlist
     table: users
     sql: "select * from users where id > @id"
-  - name: deptlist
-    table: depts
-    sql: ""
+  - name: add_user
+    table: users
+    sql: "insert into users(username,password,mobile) values (@username, @password, @mobile)"
+    select:
+      sql: "SELECT LAST_INSERT_ID()"

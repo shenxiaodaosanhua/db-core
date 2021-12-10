@@ -4,7 +4,7 @@ option go_package = "./pbfiles";
 import "google/protobuf/struct.proto";
 
 message SimpleParams {
-google.protobuf.Struct params = 1;
+  google.protobuf.Struct params = 1;
 }
 
 message QueryRequest {
@@ -15,4 +15,16 @@ message QueryRequest {
 message QueryResponse {
   string message = 1;
   repeated google.protobuf.Struct result = 2;
+}
+
+//----增删改
+message ExecRequest {
+  string name = 1;
+  SimpleParams params = 2;
+}
+
+message ExecResponse {
+  string message = 1;
+  int64 rows_affected = 2;
+  google.protobuf.Struct select = 3;
 }
