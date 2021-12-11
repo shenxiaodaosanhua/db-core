@@ -28,3 +28,15 @@ message ExecResponse {
   int64 rows_affected = 2;
   google.protobuf.Struct select = 3;
 }
+
+//--事务操作
+message TxRequest {
+  string name = 1;
+  SimpleParams params = 2;
+  string type = 3;
+}
+
+message TxResponse {
+  string message = 1;
+  google.protobuf.Struct result = 2;
+}

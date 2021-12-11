@@ -17,3 +17,6 @@ apis:
     sql: "insert into users(username,password,mobile) values (@username, @password, @mobile)"
     select:
       sql: "SELECT LAST_INSERT_ID() as user_id"
+  - name: add_user_amounts
+    table: user_amounts
+    sql: "insert into user_amounts(user_id, amount) values (@user_id, @amount)"

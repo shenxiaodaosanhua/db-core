@@ -9,34 +9,70 @@ import (
 	"log"
 )
 
+func GenParam(m map[string]interface{}) *pbfiles.SimpleParams {
+	paramStruct, err := structpb.NewStruct(m)
+	CheckError(err)
+
+	params := &pbfiles.SimpleParams{
+		Params: paramStruct,
+	}
+	return params
+}
+
+func CheckError(err error) {
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
 func main() {
 	client, err := grpc.DialContext(context.Background(),
 		"localhost:8080",
 		grpc.WithInsecure(),
 	)
+	CheckError(err)
 
-	if err != nil {
-		log.Fatal(err)
-	}
+	c := pbfiles.NewDBServiceClient(client)
+	txClient, err := c.Tx(context.Background())
+	CheckError(err)
 
-	paramStruct, err := structpb.NewStruct(map[string]interface{}{
-		"username": "jerry4",
+	params := GenParam(map[string]interface{}{
+		"username": "jerry",
 		"password": "123123",
-		"mobile":   "18011801983",
+		"mobile":   "18011801980",
 	})
-	params := &pbfiles.SimpleParams{
-		Params: paramStruct,
-	}
 
-	req := &pbfiles.ExecRequest{Name: "add_user", Params: params}
-	rsp := &pbfiles.ExecResponse{}
-	err = client.Invoke(context.Background(),
-		"/DBService/Exec", req, rsp)
-	if err != nil {
-		log.Fatal(err)
-	}
-	//for _, item := range rsp.Result {
-	//	fmt.Println(item.AsMap())
-	//}
-	fmt.Println(rsp.Select.AsMap())
+	err = txClient.Send(&pbfiles.TxRequest{
+		Name:   "add_user",
+		Params: params,
+		Type:   "exec",
+	})
+	CheckError(err)
+
+	response, err := txClient.Recv()
+	CheckError(err)
+	fmt.Println("返回值：", response)
+	result := response.Result.AsMap()
+	userId := result["exec"].([]interface{})[1].(map[string]interface{})["user_id"]
+	fmt.Println("用户ID：", userId)
+
+	addAmount := GenParam(map[string]interface{}{
+		"user_id": userId,
+		"amount":  "10000",
+	})
+	//log.Fatalln("111")
+	err = txClient.Send(&pbfiles.TxRequest{
+		Name:   "add_user_amounts",
+		Params: addAmount,
+		Type:   "exec",
+	})
+	CheckError(err)
+
+	response, err = txClient.Recv()
+	CheckError(err)
+	fmt.Println("返回值：", response)
+	fmt.Println(response.Result.AsMap())
+
+	err = txClient.CloseSend()
+	fmt.Println("操作完成关闭", err)
 }

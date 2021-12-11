@@ -15,6 +15,18 @@ type API struct {
 	Table  string  `yaml:"table"`
 	Sql    string  `yaml:"sql"`
 	Select *Select `yaml:"select"`
+	DB     *gorm.DB
+}
+
+func (a *API) getDB() *gorm.DB {
+	if a.DB == nil {
+		return GormDB
+	}
+	return a.DB
+}
+
+func (a *API) SetDB(db *gorm.DB) {
+	a.DB = db
 }
 
 func (a *API) Query(params *pbfiles.SimpleParams) ([]map[string]interface{}, error) {
@@ -33,7 +45,7 @@ func (a *API) Query(params *pbfiles.SimpleParams) ([]map[string]interface{}, err
 // QueryByTableName 未来将要过期
 func (a *API) QueryByTableName(params *pbfiles.SimpleParams) ([]map[string]interface{}, error) {
 	dbResult := make([]map[string]interface{}, 0)
-	db := GormDB.Table(a.Table)
+	db := a.getDB().Table(a.Table)
 
 	paramMap := params.Params.AsMap()
 	for key, value := range paramMap {
@@ -46,17 +58,17 @@ func (a *API) QueryByTableName(params *pbfiles.SimpleParams) ([]map[string]inter
 }
 
 func (a *API) QueryBySql(params *pbfiles.SimpleParams) ([]map[string]interface{}, error) {
-	dbResult := make([]map[string]interface{}, 0)
-	db := GormDB.Raw(a.Sql, params.Params.AsMap()).Find(&dbResult)
+	result := make([]map[string]interface{}, 0)
+	db := a.getDB().Raw(a.Sql, params.Params.AsMap()).Find(&result)
 
-	return dbResult, db.Error
+	return result, db.Error
 }
 
 func (a *API) ExecBySql(params *pbfiles.SimpleParams) (int64, map[string]interface{}, error) {
 	if a.Select != nil {
 		selectKey := make(map[string]interface{})
 		var rows int64 = 0
-		err := GormDB.Transaction(func(tx *gorm.DB) error {
+		err := a.getDB().Transaction(func(tx *gorm.DB) error {
 			db := tx.Exec(a.Sql, params.Params.AsMap())
 			if db.Error != nil {
 				return db.Error
@@ -75,7 +87,7 @@ func (a *API) ExecBySql(params *pbfiles.SimpleParams) (int64, map[string]interfa
 		}
 		return rows, selectKey, err
 	} else {
-		result := GormDB.Exec(a.Sql, params.Params.AsMap())
+		result := a.getDB().Exec(a.Sql, params.Params.AsMap())
 		return result.RowsAffected, nil, result.Error
 	}
 }
