@@ -4,11 +4,9 @@ import (
 	"context"
 	"db-core/helpers"
 	"db-core/pbfiles"
-	"fmt"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"io"
-	"log"
 )
 
 type DbService struct {
@@ -59,14 +57,12 @@ func (s *DbService) Tx(server pbfiles.DBService_TxServer) error {
 	tx := GormDB.Begin()
 	for {
 		txRequest, err := server.Recv()
+		if err == io.EOF {
+			tx.Commit()
+			return nil
+		}
+
 		if err != nil {
-			fmt.Println("错误", err, io.EOF)
-			if err == io.EOF {
-				log.Println("EOF")
-				tx.Commit()
-				return nil
-			}
-			log.Println("Error-0:", err)
 			tx.Rollback()
 			return err
 		}
@@ -78,11 +74,9 @@ func (s *DbService) Tx(server pbfiles.DBService_TxServer) error {
 
 		api.SetDB(tx)
 		ret := make(map[string]interface{})
-		fmt.Println("类型：", txRequest.Type)
 		if txRequest.Type == "query" {
 			result, err := api.QueryBySql(txRequest.Params)
 			if err != nil {
-				log.Println("Error-1:", err)
 				tx.Rollback()
 				return err
 			}
@@ -90,7 +84,6 @@ func (s *DbService) Tx(server pbfiles.DBService_TxServer) error {
 		} else {
 			rows, selectKey, err := api.ExecBySql(txRequest.Params)
 			if err != nil {
-				log.Println("Error-2:", err)
 				tx.Rollback()
 				return err
 			}
@@ -106,7 +99,6 @@ func (s *DbService) Tx(server pbfiles.DBService_TxServer) error {
 			Result:  m,
 		})
 		if err != nil {
-			log.Println("Error-3:", err)
 			tx.Rollback()
 			return err
 		}

@@ -9,22 +9,17 @@ import (
 	"log"
 )
 
-func GenParam(m map[string]interface{}) *pbfiles.SimpleParams {
-	paramStruct, err := structpb.NewStruct(m)
-	CheckError(err)
-
-	params := &pbfiles.SimpleParams{
+func MakeParam(m map[string]interface{}) *pbfiles.SimpleParams {
+	paramStruct, _ := structpb.NewStruct(m)
+	return &pbfiles.SimpleParams{
 		Params: paramStruct,
 	}
-	return params
 }
-
 func CheckError(err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
 }
-
 func main() {
 	client, err := grpc.DialContext(context.Background(),
 		"localhost:8080",
@@ -33,46 +28,38 @@ func main() {
 	CheckError(err)
 
 	c := pbfiles.NewDBServiceClient(client)
-	txClient, err := c.Tx(context.Background())
+
+	txClient, err := c.Tx(context.Background()) //执行事务
 	CheckError(err)
 
-	params := GenParam(map[string]interface{}{
+	addUserParam := MakeParam(map[string]interface{}{
 		"username": "jerry",
-		"password": "123123",
+		"password": "123",
 		"mobile":   "18011801980",
 	})
+	err = txClient.Send(&pbfiles.TxRequest{Name: "add_user", Params: addUserParam, Type: "exec"})
+	CheckError(err)
 
-	err = txClient.Send(&pbfiles.TxRequest{
-		Name:   "add_user",
-		Params: params,
-		Type:   "exec",
+	addUserRsp, err := txClient.Recv()
+	CheckError(err)
+
+	ret := addUserRsp.Result.AsMap()
+	uid := ret["exec"].([]interface{})[1].(map[string]interface{})["user_id"]
+	fmt.Println("用户ID是", uid)
+
+	//log.Fatal("abc")
+	addScoreParam := MakeParam(map[string]interface{}{
+		"user_id": uid,
+		"amount":  3, //送三个积分
 	})
+	err = txClient.Send(&pbfiles.TxRequest{Name: "add_user_amounts", Params: addScoreParam, Type: "exec"})
 	CheckError(err)
 
-	response, err := txClient.Recv()
-	CheckError(err)
-	fmt.Println("返回值：", response)
-	result := response.Result.AsMap()
-	userId := result["exec"].([]interface{})[1].(map[string]interface{})["user_id"]
-	fmt.Println("用户ID：", userId)
-
-	addAmount := GenParam(map[string]interface{}{
-		"user_id": userId,
-		"amount":  "10000",
-	})
-	//log.Fatalln("111")
-	err = txClient.Send(&pbfiles.TxRequest{
-		Name:   "add_user_amounts",
-		Params: addAmount,
-		Type:   "exec",
-	})
+	addScoreRsp, err := txClient.Recv()
 	CheckError(err)
 
-	response, err = txClient.Recv()
-	CheckError(err)
-	fmt.Println("返回值：", response)
-	fmt.Println(response.Result.AsMap())
-
+	fmt.Println(addScoreRsp.Result.AsMap())
 	err = txClient.CloseSend()
-	fmt.Println("操作完成关闭", err)
+	fmt.Println("结束")
+
 }
