@@ -33,9 +33,9 @@ func main() {
 	CheckError(err)
 
 	addUserParam := MakeParam(map[string]interface{}{
-		"username": "jerry",
+		"username": "xigou",
 		"password": "123",
-		"mobile":   "18011801980",
+		"mobile":   "13800138003",
 	})
 	err = txClient.Send(&pbfiles.TxRequest{Name: "add_user", Params: addUserParam, Type: "exec"})
 	CheckError(err)
@@ -50,7 +50,7 @@ func main() {
 	//log.Fatal("abc")
 	addScoreParam := MakeParam(map[string]interface{}{
 		"user_id": uid,
-		"amount":  3, //送三个积分
+		"amount":  1000, //送三个积分
 	})
 	err = txClient.Send(&pbfiles.TxRequest{Name: "add_user_amounts", Params: addScoreParam, Type: "exec"})
 	CheckError(err)
