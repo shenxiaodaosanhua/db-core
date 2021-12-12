@@ -18,7 +18,11 @@ func (s *DbService) Query(ctx context.Context, request *pbfiles.QueryRequest) (r
 	if api == nil {
 		return nil, status.Error(codes.Unavailable, "error api name")
 	}
-	ret, err := api.Query(request.Params) // 返回值是一个map[string]interface{}
+	//超时取消
+	if errCode, yes := helpers.ContextIsBroken(ctx); yes {
+		return nil, status.Error(errCode, ctx.Err().Error())
+	}
+	ret, err := api.Query(request.Params)
 	if err != nil {
 		return nil, status.Error(codes.Unavailable, err.Error())
 	}
@@ -38,6 +42,11 @@ func (s *DbService) Exec(ctx context.Context, request *pbfiles.ExecRequest) (*pb
 	api := SysConfig.FindAPI(request.Name)
 	if api == nil {
 		return nil, status.Error(codes.Unavailable, "error api name")
+	}
+
+	//超时取消
+	if errCode, yes := helpers.ContextIsBroken(ctx); yes {
+		return nil, status.Error(errCode, ctx.Err().Error())
 	}
 
 	rows, selectKey, err := api.ExecBySql(request.Params)
