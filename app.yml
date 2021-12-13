@@ -20,3 +20,9 @@ apis:
   - name: add_user_amounts
     table: user_amounts
     sql: "insert into user_amounts(user_id, amount) values (@user_id, @amount)"
+  - name: get_stock
+    table: product_stock
+    sql: "select * from product_stock where product_id = @productId"
+  - name: set_stock
+    table: product_stock
+    sql: "update product_stock set stock=@stock where product_id = @productId"

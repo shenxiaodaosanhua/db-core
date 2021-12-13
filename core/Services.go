@@ -89,7 +89,7 @@ func (s *DbService) Tx(server pbfiles.DBService_TxServer) error {
 				tx.Rollback()
 				return err
 			}
-			ret["query"] = result
+			ret["query"] = helpers.MapListToInterfaceList(result)
 		} else {
 			rows, selectKey, err := api.ExecBySql(txRequest.Params)
 			if err != nil {
