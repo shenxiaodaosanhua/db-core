@@ -28,4 +28,4 @@ apis:
     sql: "select * from product_stock where product_id = @productId"
   - name: set_stock
     table: product_stock
-    sql: "update product_stock set stock=@stock where product_id = @productId"
+    sql: "update product_stock set stock=@stock, version=@newVersion where product_id = @productId and version = @version"
