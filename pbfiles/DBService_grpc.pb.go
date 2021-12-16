@@ -19,6 +19,8 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type DBServiceClient interface {
 	Query(ctx context.Context, in *QueryRequest, opts ...grpc.CallOption) (*QueryResponse, error)
+	Get(ctx context.Context, in *QueryRequest, opts ...grpc.CallOption) (*QueryResponse, error)
+	First(ctx context.Context, in *QueryRequest, opts ...grpc.CallOption) (*FirstResponse, error)
 	Exec(ctx context.Context, in *ExecRequest, opts ...grpc.CallOption) (*ExecResponse, error)
 	Tx(ctx context.Context, opts ...grpc.CallOption) (DBService_TxClient, error)
 }
@@ -34,6 +36,24 @@ func NewDBServiceClient(cc grpc.ClientConnInterface) DBServiceClient {
 func (c *dBServiceClient) Query(ctx context.Context, in *QueryRequest, opts ...grpc.CallOption) (*QueryResponse, error) {
 	out := new(QueryResponse)
 	err := c.cc.Invoke(ctx, "/DBService/Query", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *dBServiceClient) Get(ctx context.Context, in *QueryRequest, opts ...grpc.CallOption) (*QueryResponse, error) {
+	out := new(QueryResponse)
+	err := c.cc.Invoke(ctx, "/DBService/Get", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *dBServiceClient) First(ctx context.Context, in *QueryRequest, opts ...grpc.CallOption) (*FirstResponse, error) {
+	out := new(FirstResponse)
+	err := c.cc.Invoke(ctx, "/DBService/First", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -85,6 +105,8 @@ func (x *dBServiceTxClient) Recv() (*TxResponse, error) {
 // for forward compatibility
 type DBServiceServer interface {
 	Query(context.Context, *QueryRequest) (*QueryResponse, error)
+	Get(context.Context, *QueryRequest) (*QueryResponse, error)
+	First(context.Context, *QueryRequest) (*FirstResponse, error)
 	Exec(context.Context, *ExecRequest) (*ExecResponse, error)
 	Tx(DBService_TxServer) error
 	mustEmbedUnimplementedDBServiceServer()
@@ -96,6 +118,12 @@ type UnimplementedDBServiceServer struct {
 
 func (UnimplementedDBServiceServer) Query(context.Context, *QueryRequest) (*QueryResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Query not implemented")
+}
+func (UnimplementedDBServiceServer) Get(context.Context, *QueryRequest) (*QueryResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Get not implemented")
+}
+func (UnimplementedDBServiceServer) First(context.Context, *QueryRequest) (*FirstResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method First not implemented")
 }
 func (UnimplementedDBServiceServer) Exec(context.Context, *ExecRequest) (*ExecResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Exec not implemented")
@@ -130,6 +158,42 @@ func _DBService_Query_Handler(srv interface{}, ctx context.Context, dec func(int
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(DBServiceServer).Query(ctx, req.(*QueryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DBService_Get_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DBServiceServer).Get(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/DBService/Get",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DBServiceServer).Get(ctx, req.(*QueryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DBService_First_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DBServiceServer).First(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/DBService/First",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DBServiceServer).First(ctx, req.(*QueryRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -188,6 +252,14 @@ var DBService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Query",
 			Handler:    _DBService_Query_Handler,
+		},
+		{
+			MethodName: "Get",
+			Handler:    _DBService_Get_Handler,
+		},
+		{
+			MethodName: "First",
+			Handler:    _DBService_First_Handler,
 		},
 		{
 			MethodName: "Exec",

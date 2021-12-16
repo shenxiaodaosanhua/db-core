@@ -4,6 +4,7 @@ import (
 	"context"
 	"db-core/helpers"
 	"db-core/pbfiles"
+	"fmt"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"io"
@@ -35,6 +36,62 @@ func (s *DbService) Query(ctx context.Context, request *pbfiles.QueryRequest) (r
 	return &pbfiles.QueryResponse{
 		Message: "success",
 		Result:  structList,
+	}, nil
+}
+
+func (s *DbService) Get(ctx context.Context, request *pbfiles.QueryRequest) (response *pbfiles.QueryResponse, err error) {
+	api := SysConfig.FindAPI(request.Name)
+	if api == nil {
+		return nil, status.Error(codes.Unavailable, "error api name")
+	}
+	//超时取消
+	if errCode, yes := helpers.ContextIsBroken(ctx); yes {
+		return nil, status.Error(errCode, ctx.Err().Error())
+	}
+	ret, err := api.Query(request.Params)
+	if err != nil {
+		return nil, status.Error(codes.Unavailable, err.Error())
+	}
+	// 把map 转化为 StructList
+	structList, err := helpers.MapListToStructList(ret)
+	if err != nil {
+		return nil, status.Error(codes.Unavailable, err.Error())
+	}
+
+	return &pbfiles.QueryResponse{
+		Message: "success",
+		Result:  structList,
+	}, nil
+}
+
+func (s *DbService) First(ctx context.Context, request *pbfiles.QueryRequest) (response *pbfiles.FirstResponse, err error) {
+	api := SysConfig.FindAPI(request.Name)
+	if api == nil {
+		return nil, status.Error(codes.Unavailable, "error api name")
+	}
+	//超时取消
+	if errCode, yes := helpers.ContextIsBroken(ctx); yes {
+		return nil, status.Error(errCode, ctx.Err().Error())
+	}
+	ret, err := api.Query(request.Params)
+	if err != nil {
+		return nil, status.Error(codes.Unavailable, err.Error())
+	}
+
+	if len(ret) < 1 {
+		return nil, fmt.Errorf("result is not found")
+	}
+
+	// 把map 转化为 StructList
+	structList, err := helpers.MapListToStructList(ret)
+	result := structList[0]
+	if err != nil {
+		return nil, status.Error(codes.Unavailable, err.Error())
+	}
+
+	return &pbfiles.FirstResponse{
+		Message: "操作成功",
+		Result:  result,
 	}, nil
 }
 

@@ -17,6 +17,11 @@ message QueryResponse {
   repeated google.protobuf.Struct result = 2;
 }
 
+message FirstResponse {
+  string message = 1;
+  google.protobuf.Struct result = 2;
+}
+
 //----增删改
 message ExecRequest {
   string name = 1;
