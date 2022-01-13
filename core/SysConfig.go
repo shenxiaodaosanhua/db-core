@@ -37,7 +37,7 @@ func (c *SysConfigStruct) FindAPI(name string) *API {
 
 var SysConfig *SysConfigStruct
 
-const SysConfigPath = "./app.yml"
+const SysConfigPath = "./resource/app.yml"
 
 func InitConfig() {
 	config := &SysConfigStruct{}
